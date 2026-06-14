@@ -1,0 +1,15 @@
+[submodule "CPT202/CPT202Project"]
+	path = CPT202/CPT202Project
+	url = https://github.com/dengpingsong/CPT202Project.git
+[submodule "CPT202/CPT202GroupWork"]
+	path = CPT202/CPT202GroupWork
+	url = https://github.com/dengpingsong/CPT202GroupWork.git
+[submodule "CPT208/MileScape.github.io"]
+	path = CPT208/MileScape.github.io
+	url = https://github.com/MileScape/MileScape.github.io.git
+[submodule "CPT208/MileScape"]
+	path = CPT208/MileScape
+	url = https://github.com/MileScape/MileScape.git
+[submodule "CPT204/CPT204-Groupwork/CPT204_GroupProject"]
+	path = CPT204/CPT204-Groupwork/CPT204_GroupProject
+	url = git@github.com:Currylovecarry/CPT204_GroupProject.git
