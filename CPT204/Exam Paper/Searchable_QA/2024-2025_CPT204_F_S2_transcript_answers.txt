@@ -1,0 +1,419 @@
+CPT204 2024-2025 F S2 - Searchable Transcript and Suggested Answers
+
+This file provides a clean searchable transcript/answer page for the scanned paper. The original image pages are preserved in the combined PDF.
+
+Part A Gap-fill Questions - Suggested Answers
+
+1. Polymorphism; Encapsulation
+2. Stacks; Queues
+3. x = 10
+4. false
+5. false
+6. reference
+7. casting / downcasting
+8. 20.0
+9. constant / public static final constant
+10. shallow copy
+11. 1
+12. reflective journal / reflective journal-log
+13. ArrayList
+14. Vector
+15. Beijing Liverpool London Suzhou
+16. 4,5,6,1,2,3
+17. HashMap, LinkedHashMap, TreeMap
+18. container1 / LinkedHashSet
+19. O(n)
+20. O(n^2)
+21. O(log n)
+22. one
+23. 11
+24. O(log n); O(log n)
+25. Dijkstra's algorithm computes shortest paths from a source vertex to other vertices.
+26. right-right; left-left
+27. 8,12,10,25,20,15
+28. linear
+29. Inclusion
+30. Diversity, or Inclusion if the expected wording focuses on not excluding all user groups.
+
+Part B Question 1 - Scorable Quiz System
+
+public class QuizResult implements Scorable {
+    private int correctAnswers;
+    private int totalQuestions;
+
+    public QuizResult(int correctAnswers, int totalQuestions) {
+        this.correctAnswers = correctAnswers;
+        this.totalQuestions = totalQuestions;
+    }
+
+    @Override
+    public int getScore() {
+        if (totalQuestions == 0) {
+            return 0;
+        }
+        return (int) Math.round((double) correctAnswers / totalQuestions * 100);
+    }
+}
+
+Part B Question 2 - AirplaneTicket Comparator
+
+private static class TicketComparator implements Comparator<AirplaneTicket> {
+    @Override
+    public int compare(AirplaneTicket t1, AirplaneTicket t2) {
+        int result = t1.getPassengerName().compareTo(t2.getPassengerName());
+        if (result != 0) return result;
+
+        result = Integer.compare(t1.getTicketPrice(), t2.getTicketPrice());
+        if (result != 0) return result;
+
+        result = t1.getArrivalTime().compareTo(t2.getArrivalTime());
+        if (result != 0) return result;
+
+        return t1.getSeatClass().compareTo(t2.getSeatClass());
+    }
+}
+
+Raw OCR Search Text
+
+
+
+===== PAGE 1: page-01.png =====
+Use
+2361387
+opyright
+CPT204 Final Exam Sample Questions - AY2425
+Part A. Gap-fill Questions
+1.
+differently, while
+the class.
+_ allows different ciasses to define methods with the same name but behave
+ensures that internal class data is not directly accessible from outside
+2..
+store objects that are processed in a last-in, first-out fashion.
+are processed in a first-in, first-out fashion.
+Only by 23
+3. Given the following method call:
+espect Copyrig]
+public static void update(int num, intl] array) (
+num = 100;
+array[0] = 50;
+XJTLU
+}
+Jse Respon
+What is the printed value of x in the main method?
+Use Only
+int x = 10;
+int[] arr = new int[1];
+update(x, arr);
+tern
+System.out.printin('x=
+store objects that
+4. What is the default value of myArray(2] after
+this
+booleanji myArray = new booiean[5];
+tuy
+Use Res
+5. What is the output of the following code:
+String s1 = "Hello";
+String s2 = new String("Hello");
+
+===== PAGE 2: page-02.png =====
+by 2361387
+opyright
+System.out.printin(s1 == s2);
+Use
+Respe
+XJTLU Acar
+Jeo eospebic dius sudoent
+6, Given the Student class below:
+private List‹String> courses;
+public List<String> getCourses() {
+return courses;
+}
+Only by 2361387
+ect Copyright
+Although courses is private, the class is still not immutable because the getter returns a/an
+to a mutabie object.
+7. public boolean equals(Object o) {
+if (o instanceof Circie) (
+return radius == ((Circle) o).radius;
+}
+return false;
+}
+After
+ternal Use
+Only by 2361387
+ict Copyright
+_, you can access the field. Equality must be based on comparing relevant fields.
+8. class B (
+public void p(double i)X
+System.out.printin(i *2);
+XJTLU Academic
+Use Responsibly & F
+}
+}
+class A extends B
+
+===== PAGE 3: page-03.png =====
+by 2361387
+public void p(int i) {
+opyright
+System.out.printin(i);
+XJTLU AS
+Use R& Given that method overloading is based on the reference type at compile time, what is printed
+B a = new A();
+a.p(10);
+9. In the code below:
+interface T1 (
+int K = 1;
+}
+emic
+Only by 2361387
+Respecí Copyright
+System.out.printin(T1.K);
+What kind of static member -which is fixed and
+cannot be changed — is accessed using the
+interface name T1?
+10. House house1 = new House(1, 1750.50);
+System.out.printinhouse1.getWhenBuiltf)==house2.getWhenBuilti); Only bi 2361387
+The code above performs a/an
+if cione() is not overridden.
+& Respect Copyright
+ısibly
+11. If the key is the first element in the array, the linear search completes in
+comparisons.
+12. In our ciass, we introduced various methods for recording OOP learning, among which a
+is a means of recording ideas, personal thoughts and experiences, as well as insights
+you gain in the learning process.
+
+===== PAGE 4: page-04.png =====
+2361387
+opyright
+13. We have learned several different data structures in Java. Suppose you are asked to design
+a container that can support efficient and random access through an index, and efficient
+insertion and deletion from the end. The best data structure for the container is
+Responsi
+14. We have learned several different data structures in Java. Suppose you are asked to design
+a container that can support efficient and random access through an index; in addition, it
+supports insertion and deletion from the end by multiple threads concurrently. The best data
+structure for the container is
+361381
+15. What is the output of the following code segment
+PriorityQueue<String> queue = new PriorityQueue<String>(
+Arrays.asList("Liverpool", "Suzhou", "London", "Beijing"
+while (Iqueue.isEmpty())
+Only
+System.out.print(queue.poll)+"");
+U5°
+16.
+Suppose we are given a linked list CPTList and list node CPTListNode outlined below
+public class CPTListNode (
+int data;
+CPTListNode next;
+tern
+}
+public class CPTList {
+private CPTListNode front;
+// some methods
+XJTLU Academic Use Only by 236131
+Use Responsibly & Respect Copyright
+}
+A method called "method1" for the CPTList class is shown below. Assume there are two CPTList
+objects, list1 and list2. list1 contains 3 nodes of value 1, 2, and 3 (starting from the front). list2
+contains another 3 nodes of value 4, 5, and 6 (starting from the front). What would be the
+
+===== PAGE 5: page-05.png =====
+answer,cce.g. 1,3,2,4 (although comma is not a part of the linked list data structure).
+public void method1(CPTList other)(
+Use Respor
+while (I.next |= nullk
+1= I.next;
+}
+i.next = front;
+front = other.front;
+}
+Only by 2361387
+J5°
+Respect Copyright
+17. A Map is a special type of Java container that stores a collection of key/value pairs. We
+have learned 3 types of built-in maps. They are:
+,and TreeMap.
+18. Suppose we have 3 containers below each containing the same set of students IDs at xjtlu.
+container1 is a LinkedHashSet.
+container2 is a LinkedList.
+container3 is an ArrayList.
+2361387
+The student IDs are stored in a random order in all 3 containers. Now We want to check if a
+given id, say 2209999, exists in the containers using the method "contains()". The code segment
+would be llke
+container1.contains(2209999)
+J5.
+container2.contains(2209999)
+container3.contains(2209999)
+JTLU Academic
+lesponsibly &
+Which container is likely to have the minimum time consumption?
+19. In Big O notation, the term
+at a linear rate with the input size.
+. is used to describe algorithms with complexity that grow
+
+===== PAGE 6: page-06.png =====
+by 2361387
+opyright
+20. The worst-case time complexity for selection sort, insertion sort, bubble sort, and quick
+sort algorithms is
+Use Respi
+for (inti = 1;i<n;i*= 2) {
+count++;
+}
+What is the time complexity of the code above?
+contains only....
+element.
+G
+Respec
+23. What value should best replace the '?' to maintain the max heap strictly?
+12
+XJTLU
+Use Respo
+10
+ternal
+Only by 2361387
+Copyright
+24. The time complexity for inserting an element into, and deleting an element from, a binary
+search tree are
+and
+_ respectively, assuming that the tree is balanced.
+25. What does Dijkstra's algorithm compute?
+XJTLU Acad
+Use Responsib
+26. In an AVL tree, a
+the right child of A, while a
+subtree of the left child of A.
+_imbalance occurs when a node is inserted into the right subtree of
+imbalance occurs when a node is inserted into the left
+
+===== PAGE 7: page-07.png =====
+2361387
+opyright
+27. The postorder traversal of the elements in an AVL tree after inserting 15, 10, 20, 25, 8, 12
+in this order is
+28. The following code uses
+XJTLU
+Resint index =key % table.length;
+while (table[index] != null) {
+index = (index + 1) % table.length; // linear probing
+probing to resolve collisions in a hash table.
+}
+table[index] = key;
+lly by 2361387
+Copyright
+29. What EDI principle is demonstrated by using accessible color schemes in a Java Swing GUI,
+ensuring that users with visuai impairments are not exciuded?
+30. What EDI principle is reflected when a Java app project is designed to accommodate both
+younger and older users, screen reader users, and speakers of different languages?
+Part B. Coding Questions
+Question 1
+Scorable Quiz System
+nter
+Given the following interface:
+public interface Scorable (
+361387
+int getScore();
+}
+J5°
+Respect
+XJTLU Academic
+Use Responsibly &
+Complete the class QuizResult that implements Scorable. The getScore() method should return the
+percentage score as an integer (e.g., 80 for 8/10). If there are no questions, simply return 0. Use
+standard rounding (i.e., round to the nearest whole number).
+
+===== PAGE 8: page-08.png =====
+by 2361387
+Starter Code:
+Copyright
+public class QuizResult implements Scorable (
+Use Responsib,
+private int totalQuestions;
+public QuizResult(int correctAnswers, int totalQuestions) {
+// TO DO
+}
+// TO DO
+Only by 2361387
+lespect Copyright
+Question 2
+Only
+You are writing a Java program that implements an airplane ticket. The ticket can be compared
+by passenger name, ticket price, arrival time, and seat elass in that order.
+Moreover, the seat class is implemented using an enumeration with First Class, Business, and
+Economy, compared in that order.
+Your task is to complete the TicketComparator class.
+2361387
+Date and Comparator have been imported. You are not allowed to import other classes.
+The skeleton code is given below:
+import java.util.Date)
+import java.util.Comparator;
+XJTLU Academic Use
+Use Responsibly & Respeci
+public class AirplaneTicket (
+private String passengerName;
+private int ticketPrice;
+private String flightNumber;
+private Date arrivalTime;
+
+===== PAGE 9: page-09.png =====
+2361381
+righ
+private SeatClass seatClass;
+public enum SeatClass {
+FIRST_CLASS, BUSINESS, ECONOMY
+XJTLU
+Use Resp
+public AirplaneTicket(String passengerName, int ticketPrice, String flightNumber, Date
+arrivalTime, SeatClass seatClass) {
+this.passengerName = passengerName: 36
+this.ticketPrice = ticketPrice;
+Only bys
+this flightNumber =flightNumbersectCopyright
+this.arrivalTime = arrivalfime;
+this.seatClass = seatClass;
+public String getPassengerName() {
+al Use Only
+return passengerName;
+}
+public int getticketpricel n2
+return ticketPrice;
+}
+public String getFlightNumber() (
+return flightNumber;
+}
+public Date getArrivalTime() {
+return arrivalTime;
+XJTLU Academic Use Only by 2361387
+Use Responsibly & Respect Copyright
+}
+public SeatClass getSeatClass() {
+
+===== PAGE 10: page-10.png =====
+by 2361387
+pyright
+return seatClass;
+1S°
+XJTLU Academic
+Respe
+public static Comparator<AirplaneTicket> getTicketComparator() {
+Use Responsibl
+return new TicketComparator();
+}
+// Complete the class TicketComparator
+private static class TicketComparator implements Comparator<AirplaneTicket> {
+}
+}
+204 FINAL
+EX
+AM
+Only
+Internal USen
+XJTLU Academic Use Only by 2361387
+Use Responsibly & Respect Cópyright
+

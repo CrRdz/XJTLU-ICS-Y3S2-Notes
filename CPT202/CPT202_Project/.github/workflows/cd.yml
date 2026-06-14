@@ -1,0 +1,272 @@
+name: CD (Main) - Docker Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI - Build & Test"]
+    types: [completed]
+    branches: ["main", "master"]
+
+jobs:
+  build-and-push:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      - name: Sync frontend static assets
+        run: ./scripts/sync-frontend-static.sh
+
+      - name: Verify synced frontend entrypoint
+        run: test -f src/main/resources/static/index.html
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Package application JAR
+        run: mvn --batch-mode --no-transfer-progress -DskipTests package
+
+      - name: Verify packaged frontend entrypoint
+        run: jar tf target/cpt202-program-0.0.1-SNAPSHOT.jar | grep -q 'BOOT-INF/classes/static/index.html'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image locally
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: cpt202program:${{ github.event.workflow_run.head_sha }}
+
+      - name: Save Docker image archive
+        run: docker save cpt202program:${{ github.event.workflow_run.head_sha }} | gzip > cpt202program-image.tar.gz
+
+      - name: Pull MySQL image on runner
+        run: docker pull mysql:8.4
+
+      - name: Save MySQL image archive
+        run: docker save mysql:8.4 | gzip > mysql-image.tar.gz
+
+      - name: Show Docker archive files
+        run: ls -lh cpt202program-image.tar.gz mysql-image.tar.gz
+
+      - name: Bundle Docker archives and deployment files
+        run: tar -czf docker-images-bundle.tar.gz cpt202program-image.tar.gz mysql-image.tar.gz docker-compose.yml docker-compose.dev.yml nginx
+
+      - name: Upload Docker bundle to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: 22
+          source: docker-images-bundle.tar.gz
+          target: /tmp/
+
+      - name: Clean runner build artifacts
+        if: always()
+        run: |
+          rm -f cpt202program-image.tar.gz mysql-image.tar.gz docker-images-bundle.tar.gz
+          rm -f target/*.jar
+          docker image rm -f cpt202program:${{ github.event.workflow_run.head_sha }} mysql:8.4 || true
+          docker builder prune -af || true
+
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Validate deployment secrets
+        env:
+          ALIYUN_HOST: ${{ secrets.ALIYUN_HOST }}
+          ALIYUN_USERNAME: ${{ secrets.ALIYUN_USERNAME }}
+          ALIYUN_SSH_KEY: ${{ secrets.ALIYUN_SSH_KEY }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          SPRING_MAIL_USERNAME: ${{ secrets.SPRING_MAIL_USERNAME }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
+          APP_FRONTEND_BASE_URL: ${{ secrets.APP_FRONTEND_BASE_URL }}
+          SPRING_DATA_REDIS_HOST: ${{ secrets.SPRING_DATA_REDIS_HOST }}
+          SPRING_DATA_REDIS_PORT: ${{ secrets.SPRING_DATA_REDIS_PORT }}
+          SPRING_DATA_REDIS_DATABASE: ${{ secrets.SPRING_DATA_REDIS_DATABASE }}
+          SPRING_DATA_REDIS_PASSWORD: ${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          test -n "$ALIYUN_HOST" || { echo "::error::Missing secret ALIYUN_HOST"; exit 1; }
+          test -n "$ALIYUN_USERNAME" || { echo "::error::Missing secret ALIYUN_USERNAME"; exit 1; }
+          test -n "$ALIYUN_SSH_KEY" || { echo "::error::Missing secret ALIYUN_SSH_KEY"; exit 1; }
+          test -n "$MYSQL_ROOT_PASSWORD" || { echo "::error::Missing secret MYSQL_ROOT_PASSWORD"; exit 1; }
+          test -n "$MYSQL_DATABASE" || { echo "::error::Missing secret MYSQL_DATABASE"; exit 1; }
+          test -n "$MYSQL_USERNAME" || { echo "::error::Missing secret MYSQL_USERNAME"; exit 1; }
+          test -n "$MYSQL_PASSWORD" || { echo "::error::Missing secret MYSQL_PASSWORD"; exit 1; }
+          test -n "$SPRING_DATA_REDIS_HOST" || { echo "::error::Missing secret SPRING_DATA_REDIS_HOST"; exit 1; }
+          test -n "$SPRING_DATA_REDIS_PORT" || { echo "::error::Missing secret SPRING_DATA_REDIS_PORT"; exit 1; }
+          test -n "$SPRING_DATA_REDIS_DATABASE" || { echo "::error::Missing secret SPRING_DATA_REDIS_DATABASE"; exit 1; }
+          test -n "$SPRING_DATA_REDIS_PASSWORD" || { echo "::error::Missing secret SPRING_DATA_REDIS_PASSWORD"; exit 1; }
+          test -n "$JWT_SECRET" || { echo "::error::Missing secret JWT_SECRET"; exit 1; }
+          test -n "$SPRING_MAIL_USERNAME" || echo "::warning::SPRING_MAIL_USERNAME not set; password reset emails will be disabled"
+          test -n "$SPRING_MAIL_PASSWORD" || echo "::warning::SPRING_MAIL_PASSWORD not set; password reset emails will be disabled"
+          if [ -z "$APP_FRONTEND_BASE_URL" ]; then
+            APP_FRONTEND_BASE_URL="https://$ALIYUN_HOST"
+            echo "APP_FRONTEND_BASE_URL not set; constructed from ALIYUN_HOST: $APP_FRONTEND_BASE_URL"
+          fi
+
+      - name: Deploy application and MySQL on Aliyun Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: 22
+          script: |
+            set -eux
+            echo "NEW NGINX DEPLOY LOGIC (main)"
+            hostname
+            curl -fsS ifconfig.me || true
+            mkdir -p /opt/cpt202
+            docker network create cpt202-network || true
+            docker volume create cpt202-mysql-data || true
+            NGINX_CONFIG_CHANGED=0
+            NGINX_CERT_CHANGED=0
+
+            ls -lh /tmp/docker-images-bundle.tar.gz
+            tar -xzf /tmp/docker-images-bundle.tar.gz -C /tmp/
+            rm -f /tmp/docker-images-bundle.tar.gz
+
+            mkdir -p /opt/cpt202/nginx /opt/cpt202/nginx/certs
+            cp /tmp/docker-compose.yml /opt/cpt202/docker-compose.yml
+            if [ ! -f /opt/cpt202/nginx/nginx.conf ] || ! cmp -s /tmp/nginx/nginx.conf /opt/cpt202/nginx/nginx.conf; then
+              cp /tmp/nginx/nginx.conf /opt/cpt202/nginx/nginx.conf
+              NGINX_CONFIG_CHANGED=1
+            fi
+            rm -f /tmp/docker-compose.yml /tmp/docker-compose.dev.yml
+            rm -rf /tmp/nginx
+
+            if [ ! -f /opt/cpt202/nginx/certs/selfsigned.crt ] || [ ! -f /opt/cpt202/nginx/certs/selfsigned.key ]; then
+              SERVER_HOST='${{ secrets.ALIYUN_HOST }}'
+              SAN_PREFIX="DNS"
+              if echo "$SERVER_HOST" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+                SAN_PREFIX="IP"
+              fi
+              openssl req -x509 -nodes -newkey rsa:2048 \
+                -keyout /opt/cpt202/nginx/certs/selfsigned.key \
+                -out /opt/cpt202/nginx/certs/selfsigned.crt \
+                -days 3650 \
+                -subj "/CN=$SERVER_HOST" \
+                -addext "subjectAltName=${SAN_PREFIX}:$SERVER_HOST"
+              NGINX_CERT_CHANGED=1
+            fi
+
+            gzip -dc /tmp/mysql-image.tar.gz | docker load
+            rm -f /tmp/mysql-image.tar.gz
+            docker image inspect nginx:1.27-alpine >/dev/null 2>&1 || {
+              docker pull docker.m.daocloud.io/nginx:1.27-alpine
+              docker tag docker.m.daocloud.io/nginx:1.27-alpine nginx:1.27-alpine
+            }
+
+            gzip -dc /tmp/cpt202program-image.tar.gz | docker load
+            rm -f /tmp/cpt202program-image.tar.gz
+
+            cat > /opt/cpt202/.env <<EOF
+            MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }}
+            MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}
+            MYSQL_USERNAME=${{ secrets.MYSQL_USERNAME }}
+            MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
+            APP_IMAGE_TAG=${{ github.event.workflow_run.head_sha }}
+            SPRING_DATA_REDIS_HOST=${{ secrets.SPRING_DATA_REDIS_HOST }}
+            SPRING_DATA_REDIS_PORT=${{ secrets.SPRING_DATA_REDIS_PORT }}
+            SPRING_DATA_REDIS_DATABASE=${{ secrets.SPRING_DATA_REDIS_DATABASE }}
+            SPRING_DATA_REDIS_PASSWORD=${{ secrets.SPRING_DATA_REDIS_PASSWORD }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            EOF
+            MAIL_USERNAME_VAL='${{ secrets.SPRING_MAIL_USERNAME }}'
+            [ -n "$MAIL_USERNAME_VAL" ] && echo "SPRING_MAIL_USERNAME=$MAIL_USERNAME_VAL" >> /opt/cpt202/.env || true
+            MAIL_PASSWORD_VAL='${{ secrets.SPRING_MAIL_PASSWORD }}'
+            [ -n "$MAIL_PASSWORD_VAL" ] && echo "SPRING_MAIL_PASSWORD=$MAIL_PASSWORD_VAL" >> /opt/cpt202/.env || true
+            FRONTEND_BASE_URL_VAL='${{ secrets.APP_FRONTEND_BASE_URL }}'
+            if [ -n "$FRONTEND_BASE_URL_VAL" ]; then
+              echo "APP_FRONTEND_BASE_URL=$FRONTEND_BASE_URL_VAL" >> /opt/cpt202/.env
+            else
+              echo "APP_FRONTEND_BASE_URL=https://$ALIYUN_HOST" >> /opt/cpt202/.env
+            fi
+            chmod 600 /opt/cpt202/.env
+
+            cd /opt/cpt202
+            docker rm -f cpt202-nginx cpt202program cpt202-mysql || true
+            docker compose --env-file /opt/cpt202/.env up -d --remove-orphans
+
+            echo "=== Waiting for containers to stabilize ==="
+            sleep 10
+            echo "=== Container status ==="
+            docker ps -a --filter name=cpt202 --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
+            echo "=== App container logs (last 80 lines) ==="
+            docker logs cpt202program --tail 80 || echo "(app container not running)"
+            echo "=== MySQL container logs (last 30 lines) ==="
+            docker logs cpt202-mysql --tail 30 || echo "(mysql container not running)"
+            echo "=== Nginx container logs (last 20 lines) ==="
+            docker logs cpt202-nginx --tail 20 || echo "(nginx container not running)"
+
+            echo "=== Waiting for app to serve index.html (max 5 min) ==="
+            ATTEMPTS=0
+            MAX_ATTEMPTS=60
+            until curl -fsS http://127.0.0.1/index.html | grep -q '<div id="app"></div>'; do
+              ATTEMPTS=$((ATTEMPTS + 1))
+              if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+                echo "ERROR: App failed to become healthy after $MAX_ATTEMPTS attempts"
+                echo "=== App container logs (crash diagnostics) ==="
+                docker logs cpt202program --tail 100 || true
+                echo "=== MySQL container logs ==="
+                docker logs cpt202-mysql --tail 30 || true
+                exit 1
+              fi
+              sleep 5
+            done
+            echo "HTTP healthcheck passed (attempts: $ATTEMPTS)"
+
+            echo "=== Waiting for HTTPS healthcheck (max 2 min) ==="
+            ATTEMPTS=0
+            until curl -kfsS https://127.0.0.1/index.html | grep -q '<div id="app"></div>'; do
+              ATTEMPTS=$((ATTEMPTS + 1))
+              if [ "$ATTEMPTS" -ge 24 ]; then
+                echo "WARNING: HTTPS healthcheck timed out, continuing anyway"
+                break
+              fi
+              sleep 5
+            done
+
+            if [ "$NGINX_CONFIG_CHANGED" -eq 1 ] || [ "$NGINX_CERT_CHANGED" -eq 1 ]; then
+              docker exec cpt202-nginx nginx -s reload
+            fi
+
+            ls -la /opt/cpt202
+            ls -la /opt/cpt202/nginx
+            docker compose --env-file /opt/cpt202/.env ps
+            rm -f /opt/cpt202/.env
+            CURRENT_APP_IMAGE="cpt202program:${{ github.event.workflow_run.head_sha }}"
+            docker image ls --format '{{.Repository}}:{{.Tag}}' | grep '^cpt202program:' | grep -Fvx "$CURRENT_APP_IMAGE" | xargs -r docker image rm -f || true
+            docker image prune -f || true

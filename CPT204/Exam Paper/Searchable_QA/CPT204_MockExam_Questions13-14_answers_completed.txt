@@ -1,0 +1,96 @@
+CPT204 Mock Exam Questions 13-14 - Completed Suggested Answers
+
+Question 13 - OnlineCourse
+
+interface Payable {
+    double getPaymentAmount();
+}
+
+class OnlineCourse implements Payable {
+    private String courseName;
+    private double baseFee;
+    private Level level;
+    private boolean hasCertificate;
+
+    public enum Level {
+        BEGINNER, INTERMEDIATE, ADVANCED
+    }
+
+    public OnlineCourse(String courseName, double baseFee,
+                        Level level, boolean hasCertificate) {
+        this.courseName = courseName;
+        this.baseFee = baseFee;
+        this.level = level;
+        this.hasCertificate = hasCertificate;
+    }
+
+    @Override
+    public double getPaymentAmount() {
+        if (baseFee < 0) {
+            return 0;
+        }
+
+        double amount = baseFee;
+        if (level == Level.INTERMEDIATE) {
+            amount += 100;
+        } else if (level == Level.ADVANCED) {
+            amount += 200;
+        }
+
+        if (hasCertificate) {
+            amount += 50;
+        }
+        return amount;
+    }
+}
+
+Question 14 - KeywordCounter
+
+import java.util.*;
+
+interface Countable {
+    int getKeywordCount();
+}
+
+class KeywordCounter implements Countable {
+    private String text;
+    private HashSet<String> keywords;
+    private HashMap<String, Integer> wordCounts;
+
+    public KeywordCounter(String text, Collection<String> keywords) {
+        this.text = text;
+        this.keywords = new HashSet<>(keywords);
+        this.wordCounts = new HashMap<>();
+        countWords();
+    }
+
+    private void countWords() {
+        if (text == null || text.isEmpty()) {
+            return;
+        }
+
+        String[] words = text.split(" ");
+        for (String word : words) {
+            if (wordCounts.containsKey(word)) {
+                wordCounts.put(word, wordCounts.get(word) + 1);
+            } else {
+                wordCounts.put(word, 1);
+            }
+        }
+    }
+
+    @Override
+    public int getKeywordCount() {
+        if (text == null || text.isEmpty()) {
+            return 0;
+        }
+
+        int total = 0;
+        for (String keyword : keywords) {
+            if (wordCounts.containsKey(keyword)) {
+                total += wordCounts.get(keyword);
+            }
+        }
+        return total;
+    }
+}

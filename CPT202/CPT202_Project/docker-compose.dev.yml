@@ -1,0 +1,31 @@
+# Development override: separate containers, volumes, and ports from production
+services:
+  mysql:
+    container_name: cpt202-mysql-dev
+    networks: !override
+      - cpt202-network-dev
+    ports:
+      - "9001:3306"
+    volumes:
+      - cpt202-mysql-data-dev:/var/lib/mysql
+  app:
+    container_name: cpt202program-dev
+    networks: !override
+      - cpt202-network-dev
+    ports: !override
+      - "8081:8080"
+  nginx:
+    container_name: cpt202-nginx-dev
+    networks: !override
+      - cpt202-network-dev
+    ports: !override
+      - "8090:80"
+      - "9002:443"
+
+volumes:
+  cpt202-mysql-data-dev:
+    external: true
+
+networks:
+  cpt202-network-dev:
+    external: true

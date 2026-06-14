@@ -1,0 +1,27 @@
+# Canonicalize all duplicate author identities to GitHub-associated accounts.
+#
+# Format: Proper Name <proper@email> <commit@email>
+#         Proper Name <proper@email> Commit Name <commit@email>
+#
+# dengpingsong (GitHub) <-- apple (local misconfigured git)
+dengpingsong <48126972+dengpingsong@users.noreply.github.com> apple <nbj@fcg>
+
+# crzhu (primary) <-- Char1z@rd (alternate email)
+crzhu <crrrrdz@gmail.com> Char1z@rd <crzhu.Richard@gmail.com>
+
+# Zelfan (GitHub canonical) <-- Zel (name-only), Zelfan/zelfan (student emails)
+Zelfan <149077185+Zelfan041210@users.noreply.github.com> Zel <149077185+Zelfan041210@users.noreply.github.com>
+Zelfan <149077185+Zelfan041210@users.noreply.github.com> Zelfan <Zichen.Fan23@student.xjtlu.edu.cn>
+Zelfan <149077185+Zelfan041210@users.noreply.github.com> zelfan <zichen.fan23@student.xjtlu.edu.cn>
+
+# Ziyi-Jia05 (GitHub) <-- merrycjia@gmail.com
+Ziyi-Jia05 <163616744+1232353124@users.noreply.github.com> Ziyi-Jia05 <merrycjia@gmail.com>
+
+# Currylovecarry (GitHub) <-- qichen70771@gmail.com
+Currylovecarry <168809187+Currylovecarry@users.noreply.github.com> Currylovecarry <qichen70771@gmail.com>
+
+# Tianchen_Niu (GitHub) <-- Niu Tianchen (QQ email)
+Tianchen_Niu <49823934+3164275232@users.noreply.github.com> Niu Tianchen <3164275232@qq.com>
+
+# uyzzp23 (GitHub) <-- uyzzp (Outlook email)
+uyzzp23 <140141141+uyzzp23@users.noreply.github.com> uyzzp <uyzzp23@outlook.com>

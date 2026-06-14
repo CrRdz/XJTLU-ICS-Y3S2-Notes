@@ -1,0 +1,32 @@
+:root {
+  --bg: #ffffff;
+  --deep: #5a2b98;
+  --mid: #7b4fbd;
+  --panel: #ffffff;
+  --text: #1c1b33;
+  --muted: #6b6b82;
+  --accent: #24b3ff;
+  --orange: #f6a63d;
+  --green: #2fc5a8;
+  --red: #c74545;
+  --border: rgba(28, 27, 51, 0.08);
+  --border-purple: rgba(90, 43, 152, 0.18);
+  --sans: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--deep);
+}
